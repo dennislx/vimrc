@@ -1,26 +1,44 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# # History in cache directory
+HISTSIZE=10000
+SAVEHIST=10000
+HISTFILE=~/.cache/zsh/history
+
+
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
+export PATH=/usr/local/anaconda3/bin:$PATH
+# export PATH=/home/dennis/.conda/envs/rapids/lib${PATH:+:${PATH}}
 
-# Path to your oh-my-zsh installation.
-export ZSH="/root/.oh-my-zsh"
+export ZSH="/home/dennis/.oh-my-zsh"
+export EDITOR="nvim"
+setopt no_nomatch
+
+# Anaconda related
+__conda_setup="$(CONDA_REPORT_ERRORS=false '/home/dennis/anaconda3/bin/conda' shell.bash hook 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    \eval "$__conda_setup"
+else
+    if [ -f "/home/dennis/anaconda3/etc/profile.d/conda.sh" ]; then
+        . "/home/dennis/anaconda3/etc/profile.d/conda.sh"
+        CONDA_CHANGEPS1=false conda activate base
+    else
+        \export PATH="/home/dennis/anaconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-# Prompts
-POWERLEVEL9K_LEFT_SEGMENT_SEPARATOR='\uE0C0'
-#POWERLEVEL9K_LEFT_SUBSEGMENT_SEPARATOR='\uE0C0'
-POWERLEVEL9K_RIGHT_SEGMENT_SEPARATOR='\uE0C2'
-#POWERLEVEL9K_RIGHT_SUBSEGMENT_SEPARATOR='\uE0C2'
-POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(dir dir_writable vcs virtualenv)
-POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(status background_jobs command_execution_time ip)
-POWERLEVEL9K_SHORTEN_DIR_LENGTH=2
-POWERLEVEL9K_SHORTEN_DELIMITER=..
-POWERLEVEL9K_PROMPT_ON_NEWLINE=true
-POWERLEVEL9K_MULTILINE_FIRST_PROMPT_PREFIX=$'\n'
-POWERLEVEL9K_MULTILINE_LAST_PROMPT_PREFIX="\uF460%F{073}\uF460%F{109}\uF460%f "
-POWERLEVEL9K_MODE='nerdfont-complete'
+# ZSH_THEME="powerlevel10k/powerlevel10k"
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # Set list of themes to pick from when loading at random
@@ -43,7 +61,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # DISABLE_UPDATE_PROMPT="true"
 
 # Uncomment the following line to change how often to auto-update (in days).
-export UPDATE_ZSH_DAYS=13
+# export UPDATE_ZSH_DAYS=13
 
 # Uncomment the following line if pasting URLs and other text is messed up.
 # DISABLE_MAGIC_FUNCTIONS="true"
@@ -58,6 +76,8 @@ export UPDATE_ZSH_DAYS=13
 # ENABLE_CORRECTION="true"
 
 # Uncomment the following line to display red dots whilst waiting for completion.
+# Caution: this setting can cause issues with multiline prompts (zsh 5.7.1 and newer seem to work)
+# See https://github.com/ohmyzsh/ohmyzsh/issues/5765
 # COMPLETION_WAITING_DOTS="true"
 
 # Uncomment the following line if you want to disable marking untracked files
@@ -71,26 +91,24 @@ export UPDATE_ZSH_DAYS=13
 # "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
 # or set a custom format using the strftime function format specifications,
 # see 'man strftime' for details.
-HIST_STAMPS="yyyy/mm/dd"
+# HIST_STAMPS="mm/dd/yyyy"
 
 # Would you like to use another custom folder than $ZSH/custom?
 # ZSH_CUSTOM=/path/to/new-custom-folder
-
 # Which plugins would you like to load?
 # Standard plugins can be found in $ZSH/plugins/
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git
-	 colored-man-pages
-	 colorize
-	 autojump
-	 zsh-autosuggestions
-	 zsh-syntax-highlighting
-	 autopep8
-)
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting autojump 
+         zsh-history-substring-search zsh-completions)
+autoload -U compinit && compinit
+# bindkey '^[[A' history-substring-search-up
+# bindkey '^[[B' history-substring-search-down
+bindkey '^[l' autosuggest-accept
 
 source $ZSH/oh-my-zsh.sh
+source ~/.local/bin/virtualenvwrapper.sh
 
 # User configuration
 
@@ -117,14 +135,15 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-alias q='QHOME=~/q rlwrap -r ~/q/l64/q'
-alias zshconfig="vim ~/.zshrc"
-alias vimconfig="vim ~/.vimrc"
-alias jupyterconfig="vim ~/.jupyter/jupyter_notebook_config.py"
-alias dolphindb="~/Data/dolphindb/server/dolphindb -console 0 &"
-alias jlab="workon pytorch && nohup jupyter-lab > jupyter.log 2>&1 &"
-alias grep="grep --color=auto"
-source /root/anaconda3/bin/virtualenvwrapper.sh
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+alias jstart="nohup jupyter notebook > /home/dennis/.log/jupyter.log 2>&1 &"
+alias work="cd /home/dennis/project/git"
+alias zijian="cd /home/dennis/project/zijian/asim"
+alias ports="sudo lsof -iTCP -sTCP:LISTEN -n -P"
+alias blog="source activate shared && (nohup yarn --cwd ~/blogs/personal serve --port 8731 > ~/.logs/blog.log 2>&1 &)"
+alias q='QHOME=~/q rlwrap -r ~/q/l32/q'
+alias vi='nvim'
+alias ranger='ranger --choosedir=$HOME/.rangerdir; LASTDIR=`cat $HOME/.rangerdir`; cd "$LASTDIR"'
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
